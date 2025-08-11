@@ -1,0 +1,7 @@
+{
+  "info": {"name": "Serverless Todo API"},
+  "item": [
+    {"name": "Create", "request": {"method": "POST", "header": [], "body": {"mode":"raw","raw":"{\"title\":\"test\"}"}, "url": {"raw":"{{baseUrl}}/items","host":["{{baseUrl}}"],"path":["items"]}}},
+    {"name": "List", "request": {"method": "GET", "url": {"raw":"{{baseUrl}}/items","host":["{{baseUrl}}"],"path":["items"]}}}
+  ]
+}

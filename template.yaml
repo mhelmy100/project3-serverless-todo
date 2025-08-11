@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless REST API for Todo/Customer records
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: python3.11
+
+Resources:
+  TodoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-TodoTable"
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-LambdaRole"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${AWS::StackName}-TodoTable"
+
+  CreateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-create"
+      Handler: create.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: backend/src
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TodoTable
+      Events:
+        CreateApi:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: post
+
+  ReadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-read"
+      Handler: read.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: backend/src
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TodoTable
+      Events:
+        ReadApi:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: get
+
+  UpdateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-update"
+      Handler: update.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: backend/src
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TodoTable
+      Events:
+        UpdateApi:
+          Type: Api
+          Properties:
+            Path: /items/{id}
+            Method: put
+
+  DeleteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-delete"
+      Handler: delete.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri: backend/src
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TodoTable
+      Events:
+        DeleteApi:
+          Type: Api
+          Properties:
+            Path: /items/{id}
+            Method: delete
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
