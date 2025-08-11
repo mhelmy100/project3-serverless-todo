@@ -1,4 +1,3 @@
-# project3-serverless-todo
 # Serverless REST API with DynamoDB & API Gateway
 
 ## 📌 Project Overview
@@ -25,3 +24,35 @@ The frontend is hosted on **Amazon S3**.
 - Static frontend for interaction.
 
 ---
+
+## 📂 Project Structure
+```
+project3-serverless-todo/
+│── backend/
+│   ├── src/              # Lambda function source code
+│   ├── requirements.txt  # Python dependencies
+│── frontend/
+│   ├── index.html         # Main HTML page
+│   ├── app.js             # JavaScript logic
+│── template.yaml          # AWS SAM template
+│── postman_collection.json # API test collection
+```
+
+---
+
+## ⚙ Deployment
+### 1. Deploy Backend with AWS SAM
+```bash
+sam build
+sam deploy --guided
+```
+
+### 2. Deploy Frontend to S3
+```bash
+aws s3 cp frontend/ s3://your-bucket-name --recursive
+```
+
+---
+
+## 📄 License
+This project is open source under the MIT License.
